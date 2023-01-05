@@ -15,7 +15,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className='flex flex-col justify-items-center items-center'>
-        <div className='flex flex-col m-10'>
+        <div className='flex flex-col m-10 gap-4'>
           <div>
             俺はスーパーマンじゃねぇから世界中の人を守るなんてデケーことは言えねぇけど<br/>
             両手で抱えられるだけの人を守れればそれでいい。<br/>
