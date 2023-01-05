@@ -1,11 +1,14 @@
 import Head from 'next/head'
 import { Inter } from '@next/font/google'
-import { BsMicMuteFill } from 'react-icons/bs';
+import { BsMicMuteFill, BsMicFill } from 'react-icons/bs';
+import React, { useState } from 'react';
+
 
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
+  const [isActive, setIsActive] = useState(false);
   return (
     <div>
       <Head>
@@ -30,7 +33,11 @@ export default function Home() {
           </div>
         </div>
         <div className='fixed bottom-0 mb-10 text-4xl'>
-          <BsMicMuteFill/>
+        {isActive? <BsMicMuteFill onClick={()=>{
+          setIsActive(!isActive)}}/>:
+          <BsMicFill onClick={()=>{
+            setIsActive(!isActive)}} />
+        }
         </div>
       </div>
     </div>
