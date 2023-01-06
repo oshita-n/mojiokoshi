@@ -2,6 +2,7 @@ import Head from 'next/head'
 import { Inter } from '@next/font/google'
 import { BsMicMuteFill, BsMicFill } from 'react-icons/bs';
 import React, { useState } from 'react';
+import AudioReactRecorder, { RecordState } from 'audio-react-recorder'
 
 
 
@@ -9,6 +10,22 @@ const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
   const [isActive, setIsActive] = useState(false);
+  const [recordState, setRecordState] = useState(null);
+
+  const start = () => {
+    setRecordState(RecordState.START)
+  }
+
+  const stop = () => {
+    setRecordState(RecordState.STOP)
+  }
+
+
+  //audioData contains blob and blobUrl
+  const onStop = (audioData: any) => {
+    console.log('audioData', audioData)
+  }
+
   return (
     <div>
       <Head>
@@ -25,17 +42,18 @@ export default function Home() {
             なんて言えるほど控えめな人間でもねぇんだ<br/>
             俺は山ほどの人を守りてぇんだ
           </div>
-          <div>
-            俺はスーパーマンじゃねぇから世界中の人を守るなんてデケーことは言えねぇけど<br/>
-            両手で抱えられるだけの人を守れればそれでいい。<br/>
-            なんて言えるほど控えめな人間でもねぇんだ<br/>
-            俺は山ほどの人を守りてぇんだ
-          </div>
+        </div>
+        
+        <div>
+          <AudioReactRecorder state={recordState} onStop={onStop} />
+
+          <button onClick={start}>Start</button>
+          <button onClick={stop}>Stop</button>
         </div>
         <div className='fixed bottom-0 mb-10 text-4xl'>
-        {isActive? <BsMicMuteFill onClick={()=>{
+        {isActive? <BsMicFill onClick={()=>{
           setIsActive(!isActive)}}/>:
-          <BsMicFill onClick={()=>{
+          <BsMicMuteFill onClick={()=>{
             setIsActive(!isActive)}} />
         }
         </div>
