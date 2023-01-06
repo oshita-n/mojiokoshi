@@ -3,28 +3,23 @@ import { Inter } from '@next/font/google'
 import { BsMicMuteFill, BsMicFill } from 'react-icons/bs';
 import React, { useState } from 'react';
 import AudioReactRecorder, { RecordState } from 'audio-react-recorder'
-
-
+import { invokeSaveAsDialog } from "recordrtc";
+import { useRecorderPermission } from '../components/useRecorderPermission';
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
   const [isActive, setIsActive] = useState(false);
-  const [recordState, setRecordState] = useState(null);
 
-  const start = () => {
-    setRecordState(RecordState.START)
-  }
-
-  const stop = () => {
-    setRecordState(RecordState.STOP)
-  }
-
-
-  //audioData contains blob and blobUrl
-  const onStop = (audioData: any) => {
-    console.log('audioData', audioData)
-  }
+  const recorder = useRecorderPermission("audio");
+  const startRecording = async () => {
+    recorder.startRecording();
+  };
+  const stopRecording = async () => {
+    await recorder.stopRecording();
+    let blob = await recorder.getBlob();
+    invokeSaveAsDialog(blob, `random_name.webm`);
+  };
 
   return (
     <div>
@@ -45,10 +40,8 @@ export default function Home() {
         </div>
         
         <div>
-          <AudioReactRecorder state={recordState} onStop={onStop} />
-
-          <button onClick={start}>Start</button>
-          <button onClick={stop}>Stop</button>
+          <button onClick={startRecording}> Start recording</button>
+          <button onClick={stopRecording}> Stop recording</button>
         </div>
         <div className='fixed bottom-0 mb-10 text-4xl'>
         {isActive? <BsMicFill onClick={()=>{
