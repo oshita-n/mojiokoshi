@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { BsMicMuteFill, BsMicFill } from 'react-icons/bs';
+import { BsMicMuteFill, BsMicFill, BsMicMute } from 'react-icons/bs';
 import React, { useState, useEffect, useRef } from 'react';
 
 export default function Home() {
@@ -20,7 +20,7 @@ export default function Home() {
     access_record();
   }, []);
 
-  
+
   const setListeners = () => {
     mediaRecorder.ondataavailable = handleOnDataAvailable;
     mediaRecorder.onstop = handleOnStop;
@@ -38,48 +38,41 @@ export default function Home() {
     const clipName = ""//prompt('Enter a name for your sound clip?','My unnamed clip');
 
     const clipContainer = document.createElement('article');
-    const clipLabel = document.createElement('p');
     const audio = document.createElement('audio');
-    const deleteButton = document.createElement('button');
 
     clipContainer.classList.add('clip');
     audio.setAttribute('controls', '');
-    deleteButton.textContent = 'Delete';
-    deleteButton.className = 'delete';
-
-    if(clipName === null) {
-      clipLabel.textContent = 'My unnamed clip';
-    } else {
-      clipLabel.textContent = clipName;
-    }
-
+   
     clipContainer.appendChild(audio);
-    // clipContainer.appendChild(clipLabel);
-    // clipContainer.appendChild(deleteButton);
     soundClips.current.appendChild(clipContainer);
+    console.log(soundClips);
     audio.controls = true;
-    const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
+    const blob = new Blob(chunks, { 'type' : 'audio/mp3; codecs=opus' });
     chunks = [];
     const audioURL = window.URL.createObjectURL(blob);
     audio.src = audioURL;
     console.log("recorder stopped");
-
-    deleteButton.onclick = function(e) {
-      e.target.closest(".clip").remove();
-    }
   };
 
   const handleClickRecord = ()=> {
-    setListeners()
-    mediaRecorder.start(1000);
-    console.log(mediaRecorder.state);
+    if(mediaRecorder.state == 'inactive'){
+      console.log(mediaRecorder);
+      setListeners()
+      console.log(mediaRecorder);
+      mediaRecorder.start(1000);
+      console.log(mediaRecorder);
+      console.log(mediaRecorder.state);
+    }
 
   }
 
   const handleClickStop = ()=> {
-    mediaRecorder.stop();
-    console.log(mediaRecorder.state);
-    console.log("recorder stopped");
+    if(mediaRecorder.state == 'recording'){
+      console.log(mediaRecorder);
+      mediaRecorder.stop();
+      console.log(mediaRecorder.state);
+      console.log("recorder stopped");
+    }
   }
 
   return (
@@ -100,21 +93,16 @@ export default function Home() {
           </div>
         </div>
 
+      
+      <section ref={soundClips}>
+      </section>
+      <div className='fixed bottom-0 mb-10 text-2xl'>
       <div>
         <button  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-4" onClick={handleClickRecord}>録音</button>
         <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleClickStop}>停止</button>
       </div>
-      <div className='fixed bottom-0 mb-10 text-4xl'>
-        {isActive? <BsMicFill onClick={()=>{
-          handleClickStop();
-          setIsActive(!isActive)}}/>:
-          <BsMicMuteFill onClick={()=>{
-            handleClickRecord();
-            setIsActive(!isActive)}} />
-        }
-        </div>
-      <section ref={soundClips}>
-      </section>
+      </div>
+      
       </div>
     </div>
   )
