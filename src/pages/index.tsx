@@ -1,25 +1,86 @@
 import Head from 'next/head'
-import { Inter } from '@next/font/google'
 import { BsMicMuteFill, BsMicFill } from 'react-icons/bs';
-import React, { useState } from 'react';
-import AudioReactRecorder, { RecordState } from 'audio-react-recorder'
-import { invokeSaveAsDialog } from "recordrtc";
-import { useRecorderPermission } from '../components/useRecorderPermission';
-
-const inter = Inter({ subsets: ['latin'] })
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function Home() {
   const [isActive, setIsActive] = useState(false);
+  const soundClips = useRef([]);
 
-  const recorder = useRecorderPermission("audio");
-  const startRecording = async () => {
-    recorder.startRecording();
+  // 再描画の影響を受けない不変なオブジェクト
+  let chunks: any = [];
+  const constraints = { audio: true };
+  let mediaRecorder = [];
+
+  // 初期化
+  useEffect(() => {
+    const access_record = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+      mediaRecorder = new MediaRecorder(stream);
+    }
+    access_record();
+  }, []);
+
+  
+  const setListeners = () => {
+    mediaRecorder.ondataavailable = handleOnDataAvailable;
+    mediaRecorder.onstop = handleOnStop;
   };
-  const stopRecording = async () => {
-    await recorder.stopRecording();
-    let blob = await recorder.getBlob();
-    invokeSaveAsDialog(blob, `random_name.webm`);
+
+  const handleOnDataAvailable = ({ data }) => {
+    if (data.size > 0) {
+      chunks.push(data);
+    }
   };
+
+  const handleOnStop = () => {
+    console.log("data available after MediaRecorder.stop() called.");
+
+    const clipName = ""//prompt('Enter a name for your sound clip?','My unnamed clip');
+
+    const clipContainer = document.createElement('article');
+    const clipLabel = document.createElement('p');
+    const audio = document.createElement('audio');
+    const deleteButton = document.createElement('button');
+
+    clipContainer.classList.add('clip');
+    audio.setAttribute('controls', '');
+    deleteButton.textContent = 'Delete';
+    deleteButton.className = 'delete';
+
+    if(clipName === null) {
+      clipLabel.textContent = 'My unnamed clip';
+    } else {
+      clipLabel.textContent = clipName;
+    }
+
+    clipContainer.appendChild(audio);
+    // clipContainer.appendChild(clipLabel);
+    // clipContainer.appendChild(deleteButton);
+    soundClips.current.appendChild(clipContainer);
+    audio.controls = true;
+    const blob = new Blob(chunks, { 'type' : 'audio/ogg; codecs=opus' });
+    chunks = [];
+    const audioURL = window.URL.createObjectURL(blob);
+    audio.src = audioURL;
+    console.log("recorder stopped");
+
+    deleteButton.onclick = function(e) {
+      e.target.closest(".clip").remove();
+    }
+  };
+
+  const handleClickRecord = ()=> {
+    setListeners()
+    mediaRecorder.start(1000);
+    console.log(mediaRecorder.state);
+
+  }
+
+  const handleClickStop = ()=> {
+    mediaRecorder.stop();
+    console.log(mediaRecorder.state);
+    console.log("recorder stopped");
+  }
 
   return (
     <div>
@@ -38,18 +99,22 @@ export default function Home() {
             俺は山ほどの人を守りてぇんだ
           </div>
         </div>
-        
-        <div>
-          <button onClick={startRecording}> Start recording</button>
-          <button onClick={stopRecording}> Stop recording</button>
-        </div>
-        <div className='fixed bottom-0 mb-10 text-4xl'>
+
+      <div>
+        <button  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-4" onClick={handleClickRecord}>録音</button>
+        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleClickStop}>停止</button>
+      </div>
+      <div className='fixed bottom-0 mb-10 text-4xl'>
         {isActive? <BsMicFill onClick={()=>{
+          handleClickStop();
           setIsActive(!isActive)}}/>:
           <BsMicMuteFill onClick={()=>{
+            handleClickRecord();
             setIsActive(!isActive)}} />
         }
         </div>
+      <section ref={soundClips}>
+      </section>
       </div>
     </div>
   )
